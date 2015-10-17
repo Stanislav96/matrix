@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class MultiMatrixThread extends Thread {
   private Integer[][] a;
   private Integer[][] b;
