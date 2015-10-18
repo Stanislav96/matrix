@@ -1,4 +1,17 @@
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class MultiMatrix {
+  static void multiThreadPool(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
+    ExecutorService serv = Executors.newCachedThreadPool();
+    for (int i = 0; i < a.length; ++i) {
+      serv.submit(new MatrixRun(a, b, result, i));
+    }
+    serv.shutdown();
+    serv.awaitTermination(1, TimeUnit.HOURS);
+  }
+
   static void multiThread(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
     int numThreads = Runtime.getRuntime().availableProcessors();
     MultiMatrixThread[] threads = new MultiMatrixThread[numThreads];

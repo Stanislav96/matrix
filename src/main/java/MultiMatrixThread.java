@@ -17,7 +17,7 @@ public class MultiMatrixThread extends Thread {
       for (int j = 0; j < b[0].length; j++) {
         result[i][j] = 0;
         for (int k = 0; k < b.length; ++k) {
-          result[i][j] = result[i][j] + a[i][k] * b[k][j];
+          result[i][j] += a[i][k] * b[k][j];
         }
       }
     }
