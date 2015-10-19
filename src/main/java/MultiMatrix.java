@@ -6,7 +6,7 @@ public class MultiMatrix {
     for (int i = 0; i < a.length; ++i) {
       for (int j = 0; j < b[0].length; ++j) {
         threads[i][j] = new MultiMatrixManyThreads(a, b, result, i, j);
-        threads[i][j].run();
+        threads[i][j].start();
       }
     }
     for (int i = 0; i < a.length; ++i) {
@@ -18,36 +18,29 @@ public class MultiMatrix {
 
   static void multiThreadPool(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException,
       ExecutionException {
-    int numThreads = Runtime.getRuntime().availableProcessors();
-    ExecutorService serv = Executors.newFixedThreadPool(numThreads);
-    Future[] future = new Future[numThreads];
-    int numStringsPerThread = a.length / numThreads;
-    int numSmallThreads = numThreads - a.length % numThreads;
-    for (int i = 0; i < numSmallThreads; ++i) {
-      future[i] = serv.submit(new MatrixRun(a, b, result, numStringsPerThread * i, numStringsPerThread * (i + 1)));
-    }
-    for (int i = numSmallThreads; i < numThreads; ++i) {
-      future[i] = serv.submit(new MatrixRun(a, b, result, (numStringsPerThread + 1) * i - numSmallThreads,
-                                            (numStringsPerThread + 1) * (i + 1) - numSmallThreads));
+    ExecutorService serv = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    Future[] future = new Future[a.length];
+    for (int i = 0; i < a.length; ++i) {
+      future[i] = serv.submit(new multiMatrixThreadPool(a, b, result, i));
     }
     serv.shutdown();
-    for (int i = 0; i < numThreads; ++i) {
+    for (int i = 0; i < a.length; ++i) {
       future[i].get();
     }
   }
 
   static void multiThread(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
     int numThreads = Runtime.getRuntime().availableProcessors();
-    Thread[] threads = new Thread[numThreads];
+    MultiMatrixThread[] threads = new MultiMatrixThread[numThreads];
     int numStringsPerThread = a.length / numThreads;
     int numSmallThreads = numThreads - a.length % numThreads;
     for (int i = 0; i < numSmallThreads; ++i) {
-      threads[i] = new Thread(new MatrixRun(a, b, result, numStringsPerThread * i, numStringsPerThread * (i + 1)));
+      threads[i] = new MultiMatrixThread(a, b, result, numStringsPerThread * i, numStringsPerThread * (i + 1));
       threads[i].start();
     }
     for (int i = numSmallThreads; i < numThreads; ++i) {
-      threads[i] = new Thread(new MatrixRun(a, b, result, (numStringsPerThread + 1) * i - numSmallThreads,
-                                            (numStringsPerThread + 1) * (i + 1) - numSmallThreads));
+      threads[i] = new MultiMatrixThread(a, b, result, (numStringsPerThread + 1) * i - numSmallThreads,
+                                         (numStringsPerThread + 1) * (i + 1) - numSmallThreads);
       threads[i].start();
     }
     for (int i = 0; i < numThreads; ++i) {
