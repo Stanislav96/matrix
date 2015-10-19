@@ -1,15 +1,32 @@
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class MultiMatrix {
-  static void multiThreadPool(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
-    ExecutorService serv = Executors.newCachedThreadPool();
+  static void multiManyThreads(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
+    MultiMatrixManyThreads[][] threads = new MultiMatrixManyThreads[a.length][b[0].length];
     for (int i = 0; i < a.length; ++i) {
-      serv.submit(new MatrixRun(a, b, result, i));
+      for (int j = 0; j < b[0].length; ++j) {
+        threads[i][j] = new MultiMatrixManyThreads(a, b, result, i, j);
+        threads[i][j].run();
+      }
+    }
+    for (int i = 0; i < a.length; ++i) {
+      for (int j = 0; j < b[0].length; ++j) {
+        threads[i][j].join();
+      }
+    }
+  }
+
+  static void multiThreadPool(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException,
+      ExecutionException {
+    ExecutorService serv = Executors.newCachedThreadPool();
+    Future[] future = new Future[a.length];
+    for (int i = 0; i < a.length; ++i) {
+      future[i] = serv.submit(new MatrixRun(a, b, result, i));
     }
     serv.shutdown();
-    serv.awaitTermination(1, TimeUnit.HOURS);
+    for (int i = 0; i < a.length; ++i) {
+      future[i].get();
+    }
   }
 
   static void multiThread(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {

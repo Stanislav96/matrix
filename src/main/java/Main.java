@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 public class Main {
   public static void main(String[] args) {
@@ -30,6 +31,14 @@ public class Main {
     System.out.println(System.currentTimeMillis() - t);
     t = System.currentTimeMillis();
     try {
+      MultiMatrix.multiManyThreads(a, b, result);
+    } catch (InterruptedException e) {
+      return;
+    }
+    System.out.print("time with many threads = ");
+    System.out.println(System.currentTimeMillis() - t);
+    t = System.currentTimeMillis();
+    try {
       MultiMatrix.multiThread(a, b, result);
     } catch (InterruptedException e) {
       return;
@@ -39,7 +48,7 @@ public class Main {
     t = System.currentTimeMillis();
     try {
       MultiMatrix.multiThreadPool(a, b, result);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException | ExecutionException e) {
       return;
     }
     System.out.print("time with thread pool = ");
