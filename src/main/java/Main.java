@@ -4,7 +4,9 @@ import java.util.concurrent.ExecutionException;
 public class Main {
   public static void main(String[] args) {
     TestTime(20);
+    TestTime(50);
     TestTime(100);
+    TestTime(300);
     TestTime(500);
   }
 
