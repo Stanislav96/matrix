@@ -49,11 +49,19 @@ public class Main {
     System.out.println(System.currentTimeMillis() - t);
     t = System.currentTimeMillis();
     try {
-      MultiMatrix.multiThreadPool(a, b, result);
+      MultiMatrix.multiThreadPoolFuture(a, b, result);
     } catch (InterruptedException | ExecutionException e) {
       return;
     }
-    System.out.print("time with thread pool = ");
+    System.out.print("time with thread pool with future = ");
+    System.out.println(System.currentTimeMillis() - t);
+    t = System.currentTimeMillis();
+    try {
+      MultiMatrix.multiThreadPoolCounter(a, b, result);
+    } catch (InterruptedException | ExecutionException e) {
+      return;
+    }
+    System.out.print("time with thread pool with counter = ");
     System.out.println(System.currentTimeMillis() - t);
   }
 }

@@ -2,10 +2,10 @@ import java.util.concurrent.*;
 
 public class MultiMatrix {
   static void multiManyThreads(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
-    MultiMatrixManyThreads[][] threads = new MultiMatrixManyThreads[a.length][b[0].length];
+    Thread[][] threads = new Thread[a.length][b[0].length];
     for (int i = 0; i < a.length; ++i) {
       for (int j = 0; j < b[0].length; ++j) {
-        threads[i][j] = new MultiMatrixManyThreads(a, b, result, i, j);
+        threads[i][j] = new Thread(new MultiMatrixCeilRunnable(a, b, result, i, j));
         threads[i][j].start();
       }
     }
@@ -16,17 +16,32 @@ public class MultiMatrix {
     }
   }
 
-  static void multiThreadPool(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException,
+  static void multiThreadPoolFuture(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException,
       ExecutionException {
     ExecutorService serv = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     Future[] future = new Future[a.length];
     for (int i = 0; i < a.length; ++i) {
-      future[i] = serv.submit(new multiMatrixThreadPool(a, b, result, i));
+      for (int j = 0; j < b[0].length; ++j) {
+        future[i] = serv.submit(new MultiMatrixCeilRunnable(a, b, result, i, j));
+      }
     }
     serv.shutdown();
     for (int i = 0; i < a.length; ++i) {
       future[i].get();
     }
+  }
+
+  static void multiThreadPoolCounter(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException,
+      ExecutionException {
+    ExecutorService serv = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    CountDownLatch cdl = new CountDownLatch(a.length * b[0].length);
+    for (int i = 0; i < a.length; ++i) {
+      for (int j = 0; j < b[0].length; ++j) {
+        serv.submit(new MultiMatrixCeilRunnable(a, b, result, i, j, cdl));
+      }
+    }
+    serv.shutdown();
+    cdl.await();
   }
 
   static void multiThread(Integer[][] a, Integer[][] b, Integer[][] result) throws InterruptedException {
